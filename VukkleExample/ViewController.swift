@@ -13,15 +13,12 @@ import MessageUI
 
 final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate {
     
-    @IBOutlet weak var containerForWKWebView: UIView!
     @IBOutlet weak var containerwkWebViewWithScript: UIView!
     @IBOutlet weak var containerForTopPowerBar: UIView!
     @IBOutlet weak var containerForBottomPowerBar: UIView!
     
     @IBOutlet weak var someTextLabel: UILabel!
     @IBOutlet weak var heightWKWebViewWithScript: NSLayoutConstraint!
-    @IBOutlet weak var heightWKWebViewConstraint: NSLayoutConstraint!
-    @IBOutlet weak var heightScrollView: NSLayoutConstraint!
     @IBOutlet weak var scrollView: UIScrollView!
     
     private var wkWebViewWithScript: WKWebView!
@@ -35,25 +32,53 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     var isKeyboardOpened = false
     let name = "Ross"
     let email = "email@sda"
+
+    var activityView = UIActivityIndicatorView()
+    var activityBackgroundView = UIView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         self.title = "VUUKLE"
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
-            NotificationCenter.default.addObserver(self, selector: #selector(keyboardHide), name: .UIKeyboardWillHide, object: nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.configureWebView), name: NSNotification.Name("updateWebViews"), object: nil)
-        
-        configureWebView()
+        registerNotification()
         askCameraAccess()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print("viewWillAppear")
+        heightWKWebViewWithScript.constant = CGFloat(VUUKLE_COMENT_INITIAL_HEIGHT)
+        configureWebView()
+    }
+     
+    func startActivityIndicator() {
+        activityBackgroundView.frame = self.view.frame
+        activityBackgroundView.backgroundColor = .white
+        activityBackgroundView.isHidden = false
+        
+        activityView.center = activityBackgroundView.center
+        activityBackgroundView.addSubview(activityView)
+        activityView.isHidden = false
+        activityView.startAnimating()
 
+        self.view.addSubview(activityBackgroundView)
+    }
+    
+    func stopActivityIndicator() {
+        activityView.isHidden = true
+        activityView.stopAnimating()
+        activityBackgroundView.isHidden = true
+    }
+    
     @objc func configureWebView() {
+        startActivityIndicator()
         addWKWebViewForScript()
-        addWKWebViewForEmoji()
         addWKWebViewForTopPowerBar()
         addWKWebViewForBottomPowerBar()
+    }
+    //Register for keyboard notification
+    func registerNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardHide), name: .UIKeyboardWillHide, object: nil)
     }
     
     //Hide keyboard
@@ -90,7 +115,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     // Create WebView for Comment Box
     private func addWKWebViewForScript() {
-        
+        print("addWKWebViewForScript")
         let thePreferences = WKPreferences()
         thePreferences.javaScriptCanOpenWindowsAutomatically = true
         thePreferences.javaScriptEnabled = true
@@ -123,23 +148,6 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         }
     }
     
-    // Create WebView for Emoji
-    private func addWKWebViewForEmoji() {
-        
-        wkWebViewWithEmoji = WKWebView(frame: .zero, configuration: configuration)
-        self.containerForWKWebView.addSubview(wkWebViewWithEmoji)
-        
-        wkWebViewWithEmoji.translatesAutoresizingMaskIntoConstraints = false
-        wkWebViewWithEmoji.topAnchor.constraint(equalTo: self.containerForWKWebView.topAnchor).isActive = true
-        wkWebViewWithEmoji.bottomAnchor.constraint(equalTo: self.containerForWKWebView.bottomAnchor).isActive = true
-        wkWebViewWithEmoji.leftAnchor.constraint(equalTo: self.containerForWKWebView.leftAnchor).isActive = true
-        wkWebViewWithEmoji.rightAnchor.constraint(equalTo: self.containerForWKWebView.rightAnchor).isActive = true
-        
-        if let url = URL(string: VUUKLE_EMOTES) {
-            wkWebViewWithEmoji.load(URLRequest(url: url))
-        }
-    }
-    
     // Create WebView for Top PowerBar
     private func addWKWebViewForTopPowerBar() {
         
@@ -161,7 +169,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     // Create WebView for Bottom PowerBar
     private func addWKWebViewForBottomPowerBar() {
-        
+        print("addWKWebViewForBottomPowerBar")
         wkWebViewForBottonPowerBar = WKWebView(frame: .zero, configuration: configuration)
         self.containerForBottomPowerBar.addSubview(wkWebViewForBottonPowerBar)
         
@@ -172,6 +180,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         wkWebViewForBottonPowerBar.rightAnchor.constraint(equalTo: self.containerForBottomPowerBar.rightAnchor).isActive = true
         wkWebViewForBottonPowerBar.uiDelegate = self
         wkWebViewForBottonPowerBar.navigationDelegate = self
+        
         if let url = URL(string: VUUKLE_POWERBAR) {
             wkWebViewForBottonPowerBar.load(URLRequest(url: url))
         }
@@ -208,7 +217,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
     
     private func openNewWindow(newURL: String) {
-        
+        print("openNewWindow")
         for url in VUUKLE_URLS {
             if newURL.hasPrefix(VUUKLE_MAIL_SHARE) {
                 let mailSubjectBody = parsMailSubjextAndBody(mailto: newURL)
@@ -230,15 +239,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // MARK: - WKNavigationDelegate methods
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("BASE URL = \(webView.url?.absoluteString ?? "")")
+        print("didFinish navigation")
+        heightWKWebViewWithScript.constant = CGFloat(VUUKLE_COMENT_INITIAL_HEIGHT)
+
         webView.evaluateJavaScript("document.readyState", completionHandler: { (complete, error) in
             if complete != nil {
+                if webView == self.wkWebViewWithScript {
+                    self.stopActivityIndicator()
+                }
                 webView.evaluateJavaScript("document.body.offsetHeight", completionHandler: { (height, error) in
-                    // You can detect webView's scrollView contentSize height
-                    if webView == self.wkWebViewWithScript {
-                        self.heightWKWebViewWithScript.constant = (height as? CGFloat) ?? 0.0
-                        self.scriptWebViewHeight = height as! CGFloat
-                    }
+ 
                 })
             }
         })
@@ -246,6 +256,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     // MARK: - WKUIDelegate methods
     func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        print("runJavaScriptTextInputPanelWithPromt promt")
         let alertController = UIAlertController(title: prompt, message: defaultText, preferredStyle: .alert)
         present(alertController, animated: true)
         alertController.addTextField(configurationHandler: nil)
@@ -259,7 +270,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
     
     func webView(_ webView: WKWebView, previewingViewControllerForElement elementInfo: WKPreviewElementInfo, defaultActions previewActions: [WKPreviewActionItem]) -> UIViewController? {
-        
+        print("previewingViewControllerForElement elementInfo")
         let vc = UIViewController()
         
         return vc
@@ -267,6 +278,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     @available(iOS 13.0, *)
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
+        print("decidePoliceFor navigationAction WKNavigationAction")
         if (navigationAction.request.url?.absoluteString ?? "").hasPrefix(VUUKLE_MAIL_TO_SHARE) {
             let mailSubjectBody = parsMailSubjextAndBody(mailto: navigationAction.request.url?.absoluteString ?? "")
             sendEmail(subject: mailSubjectBody.subject, body: mailSubjectBody.body)
@@ -282,25 +294,32 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        //self.openNewsWindow(withURL: navigationResponse.response.url?.absoluteString ?? "")
+        print("decidePolicyFor navigationResponse")
         decisionHandler(.allow)
     }
     
     func webView(_ webView: WKWebView, shouldPreviewElement elementInfo: WKPreviewElementInfo) -> Bool {
+        print("shouldPreviewElement")
         return true
     }
     
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        print("runJavaScriptAlertPanelWithMessage message")
         completionHandler()
     }
     
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+        print("runJavaScriptConfirmPanelWithMessage")
         completionHandler(true)
     }
     
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        print("createWebViewWith")
-        openNewWindow(newURL: navigationAction.request.url?.absoluteString ?? "")
+        
+        if (navigationAction.request.url?.absoluteString ?? "").hasPrefix(VUUKLE_SOCIAL_LOGIN) ||
+            (navigationAction.request.url?.absoluteString ?? "").contains("share")
+            {
+            openNewWindow(newURL: navigationAction.request.url?.absoluteString ?? "")
+        }
         
         webView.evaluateJavaScript("window.open = function(open) { return function (url, name, features) { window.location.href = url; return window; }; } (window.open);", completionHandler: nil)
         
@@ -310,8 +329,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        
-        print("BASE URL = \(webView.url?.absoluteString ?? "")")
+        print("decidePolicyFor navigationAction")
         self.heightWKWebViewWithScript.constant = scriptWebViewHeight
         if navigationAction.navigationType == .linkActivated {
             openNewWindow(newURL: navigationAction.request.url?.absoluteString ?? "")
@@ -325,11 +343,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
    
     func openNewsWindow(withURL: String) {
-        let newsWindow = VuukleNewViewController()
+        print("openNewsWindow withURL")
+        if withURL == VUUKLE_SOCIAL_LOGIN_GOOGLE {
+            configuration.applicationNameForUserAgent = "Version/8.0.2 Safari/600.2.5"
+        }
+        
+        let newsWindow = storyboard?.instantiateViewController(withIdentifier: "VuukleNewViewController") as! VuukleNewViewController
+        newsWindow.view.backgroundColor = .red
         newsWindow.wkWebView = self.wkWebViewWithScript
         newsWindow.configuration = self.configuration
         newsWindow.urlString = withURL
-    
         self.navigationController?.pushViewController(newsWindow, animated: true)
     }
     

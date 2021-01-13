@@ -17,6 +17,7 @@ let VUUKLE_POWERBAR = "https://cdntest.vuukle.com/widgets/powerbar.html?amp=fals
 // Social Login URLs
 let VUUKLE_SOCIAL_LOGIN = "https://login.vuukle.com/auth"
 let VUUKLE_SOCIAL_LOGIN_SUCCESS = "https://login.vuukle.com/consent"
+let VUUKLE_SOCIAL_LOGIN_GOOGLE = "https://login.vuukle.com/auth/google"
 
 // Settings Url
 let VUUKLE_SETTINGS = "https://news.vuukle.com/settings/edit-profile"
@@ -47,3 +48,6 @@ let VUUKLE_BASE = "https://vuukle.com/"
 let VUUKLE_IFRAME_BASE = "https://cdn.vuukle.com"
 
 let VUUKLE_URLS = [VUUKLE_NEWS_BASE_URL, VUUKLE_PRIVACY, VUUKLE_NOTIFICATION_BASE, VUUKLE_BASE, VUUKLE_MESSENGER_SHARE, VUUKLE_MAIL_SHARE, VUUKLE_TUMBLR_SHARE, VUUKLE_FLIPBOARD_SHARE, VUUKLE_PINTEREST_SHARE, VUUKLE_REDDIT_SHARE, VUUKLE_LINKEDIN_SHARE, VUUKLE_TELEGRAM_SHARE, VUUKLE_WEB_WHATSAPP_SHARE, VUUKLE_WHATSAPP_SHARE, VUUKLE_TWITTER_SHARE, VUUKLE_FB_SHARE, VUUKLE_SOCIAL_LOGIN, VUUKLE_SOCIAL_LOGIN_SUCCESS]
+
+// Vuukle Coment View Initial Sizes
+let VUUKLE_COMENT_INITIAL_HEIGHT = 268

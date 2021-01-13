@@ -11,6 +11,12 @@ import WebKit
 
 class VuukleNewViewController: UIViewController {
     
+    @IBOutlet weak var scrollContentView: UIView!
+    @IBOutlet weak var contentViewForWKWebView: UIView!
+    
+    @IBOutlet weak var scrollContentViewHeightConstraint: NSLayoutConstraint!
+    
+    
     var wkWebView: WKWebView!
     var configuration = WKWebViewConfiguration()
     var activityView = UIActivityIndicatorView()
@@ -20,26 +26,46 @@ class VuukleNewViewController: UIViewController {
     var backButton: UIBarButtonItem?
     var forwardButton: UIBarButtonItem?
     var cookies: [HTTPCookie] = []
+    var isKeyboardOpened = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        addWKWebView()
+        registerNotification()
         addNewButtonsOnNavigationBar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         edgesForExtendedLayout = []
+        scrollContentViewHeightConstraint.constant = self.view.frame.height
+        addWKWebView()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        NotificationCenter.default.post(name: NSNotification.Name("updateWebViews"), object: nil)
+        wkWebView.scrollView.removeObserver(self, forKeyPath: "contentSize", context: nil)
+    }
+        
+    //Register for keyboard notification
+    func registerNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardHide), name: .UIKeyboardWillHide, object: nil)
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        NotificationCenter.default.post(name: NSNotification.Name("updateWebViews"), object: nil)
+    //Hide keyboard
+    @objc func keyboardHide() {
+        //Code the lines to hide the keyboard and the extra lines you      want to execute before keyboard hides.
+        self.perform(#selector(keyboardHided), with: nil, afterDelay: 1)
     }
     
+    @objc func keyboardHided() {
+        isKeyboardOpened = false
+    }
+    
+    //Show keyboard
+    @objc func keyboardShow() {
+        //Code the lines you want to execute before keyboard pops up.
+        isKeyboardOpened = true
+    }
+
     func addNewButtonsOnNavigationBar() {
         
         self.navigationController?.setToolbarHidden(false, animated: true)
@@ -69,17 +95,25 @@ class VuukleNewViewController: UIViewController {
     
     private func addWKWebView() {
         
-        let config = WKWebViewConfiguration()
-        config.processPool = WKProcessPool()
+        configuration.processPool = WKProcessPool()
         let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
         cookies.forEach({ if #available(iOS 11.0, *) {
-            config.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil)
+            configuration.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil)
         } else {
             
         } })
+   
+        wkWebView = WKWebView(frame: contentViewForWKWebView.frame, configuration: configuration)
+        contentViewForWKWebView.addSubview(wkWebView)
+        wkWebView.scrollView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         
-        wkWebView = WKWebView(frame: self.view.frame, configuration: config)
-        self.view.addSubview(wkWebView)
+        wkWebView.translatesAutoresizingMaskIntoConstraints = false
+        wkWebView.scrollView.layer.masksToBounds = false
+        
+        wkWebView.topAnchor.constraint(equalTo: self.scrollContentView.topAnchor).isActive = true
+        wkWebView.bottomAnchor.constraint(equalTo: self.scrollContentView.bottomAnchor).isActive = true
+        wkWebView.leftAnchor.constraint(equalTo: self.scrollContentView.leftAnchor).isActive = true
+        wkWebView.rightAnchor.constraint(equalTo: self.scrollContentView.rightAnchor).isActive = true
         
         wkWebView.navigationDelegate = self
         wkWebView.uiDelegate = self
@@ -100,12 +134,29 @@ class VuukleNewViewController: UIViewController {
         activityView.isHidden = false
         activityView.startAnimating()
     }
+    
+    // Observer for detect wkWebView's scrollview contentSize height updates
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "contentSize" {
+            if let scroll = object as? UIScrollView {
+                if scroll.contentSize.height > 0 && !isKeyboardOpened {
+                print("scroll.contentSize.height = \(scroll.contentSize.height)")
+                    print("scrollContentViewHeightConstraint.constant = \(scrollContentViewHeightConstraint.constant)")
+                    scrollContentViewHeightConstraint.constant = scroll.contentSize.height
+                }
+            }
+        }
+    }
+
 }
 
 extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     
     // MARK: WKNavigationDelegate methods
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        print("didFinish navigation in VuukleNewViewController")
+        scrollContentViewHeightConstraint.constant = self.view.frame.height
+
         activityView.isHidden = true
         activityView.stopAnimating()
         self.wkWebView.isHidden = false
@@ -119,7 +170,7 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     }
     
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        
+        scrollContentViewHeightConstraint.constant = self.view.frame.height
         webView.load(navigationAction.request)
         webView.evaluateJavaScript("window.open = function(open) { return function (url, name, features) { window.location.href = url; return window; }; } (window.open);", completionHandler: nil)
         webView.evaluateJavaScript("window.close = function() { window.location.href = 'myapp://closewebview'; }", completionHandler: nil)
@@ -139,7 +190,7 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     }
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        
+
         if navigationAction.navigationType == .other {
             if (navigationAction.request.url?.absoluteString.contains(VUUKLE_SOCIAL_LOGIN_SUCCESS))! {
                 if isLoadedSettings {
