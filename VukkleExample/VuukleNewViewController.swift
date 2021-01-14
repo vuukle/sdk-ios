@@ -142,7 +142,9 @@ class VuukleNewViewController: UIViewController {
                 if scroll.contentSize.height > 0 && !isKeyboardOpened {
                 print("scroll.contentSize.height = \(scroll.contentSize.height)")
                     print("scrollContentViewHeightConstraint.constant = \(scrollContentViewHeightConstraint.constant)")
+                    if wkWebView.isLoading  {
                     scrollContentViewHeightConstraint.constant = scroll.contentSize.height
+                    }
                 }
             }
         }

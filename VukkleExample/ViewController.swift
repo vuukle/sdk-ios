@@ -19,6 +19,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     @IBOutlet weak var someTextLabel: UILabel!
     @IBOutlet weak var heightWKWebViewWithScript: NSLayoutConstraint!
+    @IBOutlet weak var conteinerWKWebViewWithScriptHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var scrollView: UIScrollView!
     
     private var wkWebViewWithScript: WKWebView!
@@ -97,7 +98,19 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         isKeyboardOpened = true
     }
 
-    
+    // Ask user to download messenger alert
+    func showDownloadMessengerAC() {
+        let ac = UIAlertController(title: "You don't have Messenger in your device.", message: "Please Download it!", preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let okAction = UIAlertAction(title: "Ok", style: .default) { (action) in
+            if let url = URL(string: "itms-apps://itunes.apple.com/app/id454638411") {
+                UIApplication.shared.open(url)
+            }
+        }
+        ac.addAction(cancelAction)
+        ac.addAction(okAction)
+        self.present(ac, animated: true, completion: nil)
+    }
     // Ask permission to use camera For adding photo in the comment box
     func askCameraAccess() {
         AVCaptureDevice.requestAccess(for: AVMediaType.video) { response in
@@ -134,12 +147,17 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         wkWebViewWithScript.bottomAnchor.constraint(equalTo: self.containerwkWebViewWithScript.bottomAnchor).isActive = true
         wkWebViewWithScript.leftAnchor.constraint(equalTo: self.containerwkWebViewWithScript.leftAnchor).isActive = true
         wkWebViewWithScript.rightAnchor.constraint(equalTo: self.containerwkWebViewWithScript.rightAnchor).isActive = true
-        
+        wkWebViewWithScript.backgroundColor = .green
         // Added this Observer for detect wkWebView's scrollview contentSize height updates
-        wkWebViewWithScript.scrollView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         wkWebViewWithScript.scrollView.isScrollEnabled = false
         wkWebViewWithScript.isMultipleTouchEnabled = false
         wkWebViewWithScript.contentMode = .scaleAspectFit
+        wkWebViewWithScript.scrollView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
+
+        containerwkWebViewWithScript.layoutIfNeeded()
+        containerwkWebViewWithScript.layoutSubviews()
+        self.view.layoutSubviews()
+        self.view.layoutIfNeeded()
         wkWebViewWithScript.scrollView.bouncesZoom = false
         //self.heightWKWebViewWithScript.constant = scriptWebViewHeight
         
@@ -192,8 +210,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             if let scroll = object as? UIScrollView {
                 if scroll.contentSize.height > 0 && !isKeyboardOpened {
                     print("scroll.contentSize.height = \(scroll.contentSize.height)")
-                    self.heightWKWebViewWithScript.constant = scroll.contentSize.height
-                    scriptWebViewHeight = scroll.contentSize.height
+//                    if wkWebViewWithScript.isLoading {
+                        self.heightWKWebViewWithScript.constant = scroll.contentSize.height
+                        scriptWebViewHeight = scroll.contentSize.height
+//                    }
                 }
             }
         }
@@ -226,8 +246,17 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             } else if newURL.hasPrefix(VUUKLE_MESSENGER_SHARE) {
                 let messengerUrlString = replaceLinkSymboles(text: newURL)
                 guard let messengerUrl = URL(string: messengerUrlString) else { return }
-                UIApplication.shared.open(messengerUrl)
+                
+                
+                UIApplication.shared.open(messengerUrl, options: [:]) { (succes) in
+                    if succes {
+                        
+                    } else {
+                        self.showDownloadMessengerAC()
+                    }
+                }
                 return
+
             } else if newURL.hasPrefix(url) {
                 wkWebViewWithScript.load(URLRequest(url: URL(string: "about:blank")!))
                 self.openNewsWindow(withURL: newURL)
@@ -240,8 +269,11 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         print("didFinish navigation")
-        heightWKWebViewWithScript.constant = CGFloat(VUUKLE_COMENT_INITIAL_HEIGHT)
-
+        
+        wkWebViewWithScript.evaluateJavaScript("document.documentElement.outerHTML.toString()", completionHandler: { (html: Any?, error: Error?) in
+                print(html!)
+        })
+        
         webView.evaluateJavaScript("document.readyState", completionHandler: { (complete, error) in
             if complete != nil {
                 if webView == self.wkWebViewWithScript {
@@ -253,6 +285,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             }
         })
     }
+    
     
     // MARK: - WKUIDelegate methods
     func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
@@ -356,6 +389,11 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         self.navigationController?.pushViewController(newsWindow, animated: true)
     }
     
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        conteinerWKWebViewWithScriptHeightConstraint.constant = wkWebViewWithScript.scrollView.contentOffset.y
+        wkWebViewWithScript.setNeedsLayout()
+    }
 }
 
 // MARK: - SEND EMAIL Metods
