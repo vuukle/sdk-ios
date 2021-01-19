@@ -27,6 +27,10 @@ let VUUKLE_FB_SHARE = "https://www.facebook.com/share"
 let VUUKLE_TWITTER_SHARE = "https://twitter.com/share"
 let VUUKLE_WHATSAPP_SHARE = "https://api.whatsapp.com/"
 let VUUKLE_WEB_WHATSAPP_SHARE = "https://web.whatsapp.com/send"
+let VUUKLE_WHATSAPP_PROFILE_SHARE = "whatsapp://send?"
+
+
+
 let VUUKLE_TELEGRAM_SHARE = "https://telegram.me/share"
 let VUUKLE_LINKEDIN_SHARE = "https://www.linkedin.com/shareArticle"
 let VUUKLE_REDDIT_SHARE = "https://www.reddit.com"
@@ -36,7 +40,7 @@ let VUUKLE_TUMBLR_SHARE  = "https://tumblr.com/"
 let VUUKLE_MAIL_SHARE = "mailto:?subject"
 let VUUKLE_MAIL_TO_SHARE = "mailto:to?subject"
 let VUUKLE_MESSENGER_SHARE = "fb-messenger://share"
-
+let VUUKLE_TG_SHARE = "tg://msg_url"
 // Vuukle News
 let VUUKLE_NEWS_BASE_URL = "https://news.vuukle.com/"
 // Vuukle Privacy

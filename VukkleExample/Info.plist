@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>Tumblr</string>
+		<string>Flipboard</string>
+		<string>Pinterest</string>
+		<string>LinkedIn</string>
+		<string>fb-messenger</string>
+		<string>twitter</string>
+		<string>fb</string>
+		<string>telegram</string>
+		<string>whatsapp</string>
+		<string>reddit</string>
+	</array>
 	<key>User Interface Style</key>
 	<string>Light</string>
 	<key>CFBundleDevelopmentRegion</key>
