@@ -11,7 +11,7 @@ import WebKit
 import AVFoundation
 import MessageUI
 
-final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate {
+final class ViewController: UIViewController {
     
     @IBOutlet weak var containerwkWebViewWithScript: UIView!
     @IBOutlet weak var containerForTopPowerBar: UIView!
@@ -23,17 +23,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     @IBOutlet weak var scrollView: UIScrollView!
     
     var wkWebViewWithScript: WKWebView!
-    var wkWebViewWithEmoji: WKWebView!
     var wkWebViewForTopPowerBar: WKWebView!
     var wkWebViewForBottonPowerBar: WKWebView!
     
     private var configuration = WKWebViewConfiguration()
-    private var scriptWebViewHeight: CGFloat = 0
     var newWebviewPopupWindow: WKWebView?
     var isKeyboardOpened = false
     let name = "Ross"
     let email = "email@sda"
 
+    var isFromNewViewController = false
     var activityView = UIActivityIndicatorView()
     var activityBackgroundView = UIView()
     
@@ -41,6 +40,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         super.viewDidLoad()
         self.title = "VUUKLE"
         registerNotification()
+        setWKWebViewConfigurations()
+        configureWebView()
         askCameraAccess()
     }
     
@@ -48,36 +49,49 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         super.viewWillAppear(animated)
         print("viewWillAppear")
         heightWKWebViewWithScript.constant = CGFloat(VUUKLE_COMENT_INITIAL_HEIGHT)
-        configureWebView()
+        if isFromNewViewController {
+            reloadWebView()
+        }
+        // Added this Observer for detect wkWebView's scrollview contentSize height updates
+        wkWebViewWithScript.scrollView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        wkWebViewWithScript.scrollView.removeObserver(self, forKeyPath: "contentSize", context: nil)
     }
-    
-    deinit {
-        print("deinit")
-    }
-     
-    func startActivityIndicator() {
-        activityBackgroundView.frame = self.view.frame
-        activityBackgroundView.backgroundColor = .white
-        activityBackgroundView.isHidden = false
-        
-        activityView.center = activityBackgroundView.center
-        activityBackgroundView.addSubview(activityView)
-        activityView.isHidden = false
-        activityView.startAnimating()
 
-        self.view.addSubview(activityBackgroundView)
+    //Register for keyboard notification
+    func registerNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardHide), name: .UIKeyboardWillHide, object: nil)
     }
     
-    // stop activity indicator
-    func stopActivityIndicator() {
-        activityView.isHidden = true
-        activityView.stopAnimating()
-        activityBackgroundView.isHidden = true
+    // Set wkwebview configurations
+    func setWKWebViewConfigurations() {
+        let thePreferences = WKPreferences()
+        thePreferences.javaScriptCanOpenWindowsAutomatically = true
+        thePreferences.javaScriptEnabled = true
+        configuration.preferences = thePreferences
+        let source: String = "var meta = document.createElement('meta');" +
+            "meta.name = 'viewport';" +
+            "meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';" +
+            "var head = document.getElementsByTagName('head')[0];" +
+            "head.appendChild(meta);"
+
+        let script: WKUserScript = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        let userContentController: WKUserContentController = WKUserContentController()
+
+        configuration.userContentController = userContentController
+        userContentController.addUserScript(script)
+        
+        configuration.processPool = WKProcessPool()
+        let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
+        cookies.forEach({ if #available(iOS 11.0, *) {
+            configuration.websiteDataStore.httpCookieStore.setCookie($0, completionHandler: nil)
+        } else {
+            
+        } })
     }
     
     // configure web view
@@ -90,12 +104,46 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         addWKWebViewForBottomPowerBar()
     }
     
-    //Register for keyboard notification
-    func registerNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardHide), name: .UIKeyboardWillHide, object: nil)
+    // Ask permission to use camera For adding photo in the comment box
+    func askCameraAccess() {
+        AVCaptureDevice.requestAccess(for: AVMediaType.video) { response in
+            if response {
+                // access granted
+            } else {
+                // access not granted
+            }
+        }
     }
     
+    func startActivityIndicator() {
+        activityBackgroundView.frame = self.view.frame
+        activityBackgroundView.backgroundColor = .white
+        activityBackgroundView.isHidden = false
+
+        activityView.center = activityBackgroundView.center
+        activityBackgroundView.addSubview(activityView)
+        activityView.isHidden = false
+        activityView.startAnimating()
+
+        self.view.addSubview(activityBackgroundView)
+    }
+
+//     stop activity indicator
+    func stopActivityIndicator() {
+        activityView.isHidden = true
+        activityView.stopAnimating()
+        activityBackgroundView.isHidden = true
+    }
+    
+    func reloadWebView() {
+        isFromNewViewController.toggle()
+        wkWebViewWithScript.reload()
+        wkWebViewForBottonPowerBar.reload()
+        wkWebViewForTopPowerBar.reload()
+        containerwkWebViewWithScript.frame = wkWebViewWithScript.frame
+    }
+    
+     
     //Hide keyboard
     @objc func keyboardHide() {
         //Code the lines to hide the keyboard and the extra lines you      want to execute before keyboard hides.
@@ -112,54 +160,29 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         isKeyboardOpened = true
     }
     
-    // Ask permission to use camera For adding photo in the comment box
-    func askCameraAccess() {
-        AVCaptureDevice.requestAccess(for: AVMediaType.video) { response in
-            if response {
-                // access granted
-            } else {
-                // access not granted
-            }
-        }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        wkWebViewWithScript.scrollView.removeObserver(self, forKeyPath: "contentSize", context: nil)
-    }
-    
     // Create WebView for Comment Box
     private func addWKWebViewForScript() {
         print("addWKWebViewForScript")
-        let thePreferences = WKPreferences()
-        thePreferences.javaScriptCanOpenWindowsAutomatically = true
-        thePreferences.javaScriptEnabled = true
-        configuration.preferences = thePreferences
         
-        wkWebViewWithScript = WKWebView(frame: .zero, configuration: configuration)
+        wkWebViewWithScript = WKWebView(frame: containerwkWebViewWithScript.bounds, configuration: configuration)
+        wkWebViewWithScript.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.containerwkWebViewWithScript.addSubview(wkWebViewWithScript)
+
         wkWebViewWithScript.navigationDelegate = self
         wkWebViewWithScript.uiDelegate = self
-        self.containerwkWebViewWithScript.addSubview(wkWebViewWithScript)
         
-        wkWebViewWithScript.translatesAutoresizingMaskIntoConstraints = false
         wkWebViewWithScript.scrollView.layer.masksToBounds = false
         wkWebViewWithScript.scrollView.delegate = self
         
-        wkWebViewWithScript.topAnchor.constraint(equalTo: self.containerwkWebViewWithScript.topAnchor).isActive = true
-        wkWebViewWithScript.bottomAnchor.constraint(equalTo: self.containerwkWebViewWithScript.bottomAnchor).isActive = true
-        wkWebViewWithScript.leftAnchor.constraint(equalTo: self.containerwkWebViewWithScript.leftAnchor).isActive = true
-        wkWebViewWithScript.rightAnchor.constraint(equalTo: self.containerwkWebViewWithScript.rightAnchor).isActive = true
-        // Added this Observer for detect wkWebView's scrollview contentSize height updates
         wkWebViewWithScript.scrollView.isScrollEnabled = false
         wkWebViewWithScript.isMultipleTouchEnabled = false
         wkWebViewWithScript.contentMode = .scaleAspectFit
-        wkWebViewWithScript.scrollView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
 
         containerwkWebViewWithScript.layoutIfNeeded()
         containerwkWebViewWithScript.layoutSubviews()
         self.view.layoutSubviews()
         self.view.layoutIfNeeded()
         wkWebViewWithScript.scrollView.bouncesZoom = false
-        //self.heightWKWebViewWithScript.constant = scriptWebViewHeight
         
         if let url = URL(string: VUUKLE_IFRAME) {
             wkWebViewWithScript.load(URLRequest(url: url))
@@ -169,14 +192,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // Create WebView for Top PowerBar
     private func addWKWebViewForTopPowerBar() {
         
-        wkWebViewForTopPowerBar = WKWebView(frame: .zero, configuration: configuration)
+        wkWebViewForTopPowerBar = WKWebView(frame: containerForTopPowerBar.bounds, configuration: configuration)
+        wkWebViewForTopPowerBar.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.containerForTopPowerBar.addSubview(wkWebViewForTopPowerBar)
         
-        wkWebViewForTopPowerBar.translatesAutoresizingMaskIntoConstraints = false
-        wkWebViewForTopPowerBar.topAnchor.constraint(equalTo: self.containerForTopPowerBar.topAnchor).isActive = true
-        wkWebViewForTopPowerBar.bottomAnchor.constraint(equalTo: self.containerForTopPowerBar.bottomAnchor).isActive = true
-        wkWebViewForTopPowerBar.leftAnchor.constraint(equalTo: self.containerForTopPowerBar.leftAnchor).isActive = true
-        wkWebViewForTopPowerBar.rightAnchor.constraint(equalTo: self.containerForTopPowerBar.rightAnchor).isActive = true
         wkWebViewForTopPowerBar.uiDelegate = self
         wkWebViewForTopPowerBar.navigationDelegate = self
         
@@ -188,14 +207,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // Create WebView for Bottom PowerBar
     private func addWKWebViewForBottomPowerBar() {
         print("addWKWebViewForBottomPowerBar")
-        wkWebViewForBottonPowerBar = WKWebView(frame: .zero, configuration: configuration)
+        wkWebViewForBottonPowerBar = WKWebView(frame: containerForBottomPowerBar.bounds, configuration: configuration)
+        wkWebViewForBottonPowerBar.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.containerForBottomPowerBar.addSubview(wkWebViewForBottonPowerBar)
         
-        wkWebViewForBottonPowerBar.translatesAutoresizingMaskIntoConstraints = false
-        wkWebViewForBottonPowerBar.topAnchor.constraint(equalTo: self.containerForBottomPowerBar.topAnchor).isActive = true
-        wkWebViewForBottonPowerBar.bottomAnchor.constraint(equalTo: self.containerForBottomPowerBar.bottomAnchor).isActive = true
-        wkWebViewForBottonPowerBar.leftAnchor.constraint(equalTo: self.containerForBottomPowerBar.leftAnchor).isActive = true
-        wkWebViewForBottonPowerBar.rightAnchor.constraint(equalTo: self.containerForBottomPowerBar.rightAnchor).isActive = true
         wkWebViewForBottonPowerBar.uiDelegate = self
         wkWebViewForBottonPowerBar.navigationDelegate = self
         
@@ -209,34 +224,14 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         if keyPath == "contentSize" {
             if let scroll = object as? UIScrollView {
                 if scroll.contentSize.height > 0 && !isKeyboardOpened {
-//                    print("scroll.contentSize.height = \(scroll.contentSize.height)")
-//                    if wkWebViewWithScript.isLoading {
                         self.heightWKWebViewWithScript.constant = scroll.contentSize.height
-                        scriptWebViewHeight = scroll.contentSize.height
-//                    }
                 }
             }
         }
     }
     
-    // MARK: - Clear cookie
-    
-    private func clearAllCookies() {
-        let cookieJar = HTTPCookieStorage.shared
-        for cookie in cookieJar.cookies! {
-            cookieJar.deleteCookie(cookie)
-        }
-    }
-    
-    private func clearCookiesFromSpecificUrl(yourUrl: String) {
-        let cookieStorage: HTTPCookieStorage = HTTPCookieStorage.shared
-        let cookies = cookieStorage.cookies(for: URL(string: yourUrl)!)
-        for cookie in cookies! {
-            cookieStorage.deleteCookie(cookie as HTTPCookie)
-        }
-    }
-    
     private func openNewWindow(newURL: String) {
+        isFromNewViewController = true
         print("openNewWindow")
         for url in VUUKLE_URLS {
             if newURL.hasPrefix(VUUKLE_MAIL_SHARE) {
@@ -244,24 +239,28 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
                 sendEmail(subject: mailSubjectBody.subject, body: mailSubjectBody.body)
                 return
             } else if newURL.hasPrefix(url) {
-//                wkWebViewWithScript.load(URLRequest(url: URL(string: "about:blank")!))
                 self.openNewsWindow(withURL: newURL)
                 return
             }
         }
     }
     
-    // Ask user to download application alert
-    func createAlertController(appName: String, appStoreId: String) {
+    // Redirect to new page for social web share
+    func createAlertController(appName: String, appStoreId: String, navigationURLString: String) {
         let ac = UIAlertController(title: "You don't have \(appName) in your device?", message: "Please download it!", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        let okAction = UIAlertAction(title: "Ok", style: .default) { (action) in
+       
+        let okAction = UIAlertAction(title: "Download", style: .default) { (action) in
             if let url = URL(string: "itms-apps://itunes.apple.com/app/\(appStoreId)") {
                 UIApplication.shared.open(url)
             }
         }
+        let openInWeb = UIAlertAction(title: "Open in web", style: .default) { (action) in
+            self.openWebSocialSharePage(withURL: navigationURLString)
+        }
         
         ac.addAction(cancelAction)
+        ac.addAction(openInWeb)
         ac.addAction(okAction)
         present(ac, animated: true, completion: nil)
     }
@@ -274,7 +273,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             if UIApplication.shared.canOpenURL(appUrl!) {
                 UIApplication.shared.open(urlString)
             } else {
-                createAlertController(appName: name, appStoreId: id)
+                createAlertController(appName: name, appStoreId: id, navigationURLString: navigationURLString)
             }
         }
     }
@@ -290,7 +289,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             openApplication(appName: "reddit://", navigationURLString: navigationURLString, name: "Reddit", id: "id1064216828")
             decisionHandler(.cancel)
 
-        } else if (navigationURLString.contains(VUUKLE_TG_SHARE)) {
+        } else if (navigationURLString.contains(VUUKLE_TELEGRAM_SHARE)) {
             openApplication(appName: "telegram://", navigationURLString: navigationURLString, name: "Telegram", id: "id686449807")
             decisionHandler(.cancel)
 
@@ -318,151 +317,18 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         } else if (navigationURLString.contains(VUUKLE_TUMBLR_SHARE)) {
             openApplication(appName: "Tumblr://", navigationURLString: navigationURLString, name: "Tumblr", id: "id305343404")
             decisionHandler(.cancel)
-        } else {
+        } else   {
             decisionHandler(.allow)
         }
     }
     
-    // MARK: - WKNavigationDelegate methods
-    
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("didFinish navigation")
-        
-        wkWebViewWithScript.evaluateJavaScript("document.documentElement.outerHTML.toString()", completionHandler: { (html: Any?, error: Error?) in
-        })
-        
-        webView.evaluateJavaScript("document.readyState", completionHandler: { (complete, error) in
-            if complete != nil {
-                if webView == self.wkWebViewWithScript {
-                    self.stopActivityIndicator()
-                }
-                webView.evaluateJavaScript("document.body.offsetHeight", completionHandler: { (height, error) in
- 
-                })
-            }
-        })
-    }
-    
-    
-    // MARK: - WKUIDelegate methods
-    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
-        print("runJavaScriptTextInputPanelWithPromt promt")
-        let alertController = UIAlertController(title: prompt, message: defaultText, preferredStyle: .alert)
-        present(alertController, animated: true)
-        alertController.addTextField(configurationHandler: nil)
-        
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: {_ in
-            completionHandler(nil)
-        }))
-        alertController.addAction(UIAlertAction(title: "Ok", style: .default, handler: { (okAction) in
-            completionHandler(alertController.textFields?.first?.text)
-        }))
-    }
-    
-    func webView(_ webView: WKWebView, previewingViewControllerForElement elementInfo: WKPreviewElementInfo, defaultActions previewActions: [WKPreviewActionItem]) -> UIViewController? {
-        print("previewingViewControllerForElement elementInfo")
-        let vc = UIViewController()
-        
-        return vc
-    }
-    
-//    @available(iOS 13.0, *)
-//    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
-//        print("decidePoliceFor navigationAction WKNavigationAction")
-//        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
-//
-////        if navigationURLString.hasPrefix(VUUKLE_MAIL_TO_SHARE) {
-////            let mailSubjectBody = parsMailSubjextAndBody(mailto: navigationURLString)
-////            sendEmail(subject: mailSubjectBody.subject, body: mailSubjectBody.body)
-////        } else {
-////            for url in VUUKLE_URLS {
-////                if navigationURLString.contains(url) {
-////                    openNewWindow(newURL: navigationURLString)
-////                    break
-////                }
-////            }
-////        }
-////        if navigationAction.navigationType == .backForward {
-////            webView.goBack()
-////        }
-//        decisionHandler(.allow, preferences)
-//    }
-
-    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        print("decidePolicyFor navigationResponse")
-        decisionHandler(.allow)
-    }
-    
-    func webView(_ webView: WKWebView, shouldPreviewElement elementInfo: WKPreviewElementInfo) -> Bool {
-        print("shouldPreviewElement")
-        return true
-    }
-    
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        print("runJavaScriptAlertPanelWithMessage message")
-        completionHandler()
-    }
-    
-    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        print("runJavaScriptConfirmPanelWithMessage")
-        completionHandler(true)
-    }
-    
-    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
-
-//        if navigationURLString.hasPrefix(VUUKLE_SOCIAL_LOGIN) || navigationURLString.hasPrefix(VUUKLE_REDDIT_SHARE) || //            navigationURLString.hasPrefix(VUUKLE_WHATSAPP_SHARE) ||
-//            navigationURLString.contains("share")
-//        {
-//            openNewWindow(newURL: navigationURLString)
-//        }
-        
-        
-        webView.load(navigationAction.request)
-
-        webView.evaluateJavaScript("window.open = function(open) { return function (url, name, features) { window.location.href = url; return window; }; } (window.open);", completionHandler: nil)
-        
-        webView.evaluateJavaScript("window.close = function() { window.location.href = 'myapp://closewebview'; }", completionHandler: nil)
-        
-        return nil
-    }
-    
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        print("decidePolicyFor navigationAction")
-        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
-
-//        self.heightWKWebViewWithScript.constant = scriptWebViewHeight
-//        if navigationAction.navigationType == .linkActivated {
-//            openNewWindow(newURL: navigationURLString)
-//
-//        } else if navigationAction.navigationType == .other {
-//                openNewWindow(newURL: navigationURLString)
-//        }
-//        decisionHandler(.allow)
-        
-        print("navigationURLString ======= \(navigationURLString)")
-        
-        if navigationURLString.hasPrefix(VUUKLE_MAIL_TO_SHARE) || navigationURLString.hasPrefix(VUUKLE_MAIL_SHARE) {
-            let mailSubjectBody = parsMailSubjextAndBody(mailto: navigationURLString)
-            sendEmail(subject: mailSubjectBody.subject, body: mailSubjectBody.body)
-            decisionHandler(.allow)
-        } else if navigationURLString.hasPrefix(VUUKLE_SOCIAL_LOGIN) || navigationURLString.hasPrefix(VUUKLE_PRIVACY) ||
-            navigationURLString.hasPrefix(VUUKLE_NEWS_BASE_URL) ||
-            navigationURLString.hasPrefix("https://api.vuukle.com/stats") {
-            openNewWindow(newURL: navigationURLString)
-            decisionHandler(.cancel)
-        } else {
-            openApllicationForShare(navigationURLString: navigationURLString, decisionHandler: decisionHandler)
-        }
-    }
-   
     func openNewsWindow(withURL: String) {
         print("openNewsWindow withURL")
         if withURL == VUUKLE_SOCIAL_LOGIN_GOOGLE {
-            configuration.applicationNameForUserAgent = "Version/8.0.2 Safari/600.2.5"
+            configuration.applicationNameForUserAgent = VUUKLE_GOOGLE_CONFIG
         }
         ///////////////////////////////////////
-        if let newsWindow = storyboard?.instantiateViewController(withIdentifier: "VuukleNewViewController") as?  VuukleNewViewController {
+        if let newsWindow = storyboard?.instantiateViewController(withIdentifier: VuukleNewViewController.id) as?  VuukleNewViewController {
             newsWindow.wkWebView = self.wkWebViewWithScript
             newsWindow.configuration = self.configuration
             newsWindow.urlString = withURL
@@ -470,49 +336,18 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         }
     }
     
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        print("8")
+    // open social networks on a web page, not in an application
+    // witout passing webView conffigurations
+    func openWebSocialSharePage(withURL: String) {
+        isFromNewViewController = false
+        if withURL == VUUKLE_SOCIAL_LOGIN_GOOGLE {
+            configuration.applicationNameForUserAgent = VUUKLE_GOOGLE_CONFIG
+        }
         
-    }
-    
-    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-        print("9")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        print("10")
-    }
-    
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        print("11")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("error == \(error.localizedDescription)")
-        print("12")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("13")
-        completionHandler(.performDefaultHandling, nil)
-    }
-    
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        print("14")
-    }
-    
-    func webView(_ webView: WKWebView, authenticationChallenge challenge: URLAuthenticationChallenge, shouldAllowDeprecatedTLS decisionHandler: @escaping (Bool) -> Void) {
-        print("15")
-        decisionHandler(true)
-    }
-    
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        conteinerWKWebViewWithScriptHeightConstraint.constant = wkWebViewWithScript.scrollView.contentOffset.y
-        wkWebViewWithScript.setNeedsLayout()
+        if let newsWindow = storyboard?.instantiateViewController(withIdentifier: WuukleWebSocialPageViewController.id) as?  WuukleWebSocialPageViewController {
+            newsWindow.urlString = withURL
+            self.navigationController?.pushViewController(newsWindow, animated: true)
+        }
     }
 }
 
@@ -585,5 +420,161 @@ extension ViewController: MFMailComposeViewControllerDelegate {
     // MARK: - MFMailComposeViewControllerDelegate
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         controller.dismiss(animated: true)
+    }
+}
+
+extension ViewController: WKNavigationDelegate,  WKUIDelegate {
+    // MARK: - WKNavigationDelegate methods
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        print("didFinish navigation")
+        
+        wkWebViewWithScript.evaluateJavaScript("document.documentElement.outerHTML.toString()", completionHandler: { (html: Any?, error: Error?) in
+        })
+        
+        webView.evaluateJavaScript("document.readyState", completionHandler: { (complete, error) in
+            if complete != nil {
+                if webView == self.wkWebViewWithScript {
+                    self.stopActivityIndicator()
+                }
+            }
+        })
+    }
+    
+    
+    // MARK: - WKUIDelegate methods
+    func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
+        print("runJavaScriptTextInputPanelWithPromt promt")
+        let alertController = UIAlertController(title: prompt, message: defaultText, preferredStyle: .alert)
+        present(alertController, animated: true)
+        alertController.addTextField(configurationHandler: nil)
+        
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: {_ in
+            completionHandler(nil)
+        }))
+        alertController.addAction(UIAlertAction(title: "Ok", style: .default, handler: { (okAction) in
+            completionHandler(alertController.textFields?.first?.text)
+        }))
+    }
+    
+    func webView(_ webView: WKWebView, previewingViewControllerForElement elementInfo: WKPreviewElementInfo, defaultActions previewActions: [WKPreviewActionItem]) -> UIViewController? {
+        print("previewingViewControllerForElement elementInfo")
+        let vc = UIViewController()
+        
+        return vc
+    }
+
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        print("decidePolicyFor navigationResponse")
+        decisionHandler(.allow)
+    }
+    
+    func webView(_ webView: WKWebView, shouldPreviewElement elementInfo: WKPreviewElementInfo) -> Bool {
+        print("shouldPreviewElement")
+        return true
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        print("runJavaScriptAlertPanelWithMessage message")
+        completionHandler()
+    }
+    
+    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+        print("runJavaScriptConfirmPanelWithMessage")
+        
+        let ac = UIAlertController(title: nil, message: "\(message)", preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
+            completionHandler(false)
+        }
+        let okAction = UIAlertAction(title: "Ok", style: .default) { (action) in
+            completionHandler(true)
+        }
+        
+        ac.addAction(cancelAction)
+        ac.addAction(okAction)
+        present(ac, animated: true, completion: nil)
+        
+    }
+    
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
+
+        webView.load(navigationAction.request)
+
+        webView.evaluateJavaScript("window.open = function(open) { return function (url, name, features) { window.location.href = url; return window; }; } (window.open);", completionHandler: nil)
+        
+        webView.evaluateJavaScript("window.close = function() { window.location.href = 'myapp://closewebview'; }", completionHandler: nil)
+        
+        return nil
+    }
+    
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
+        print("decidePolicyFor navigationAction")
+        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
+
+        print("navigationURLString ======= \(navigationURLString)")
+        
+        if navigationURLString.hasPrefix(VUUKLE_MAIL_TO_SHARE) || navigationURLString.hasPrefix(VUUKLE_MAIL_SHARE) {
+            let mailSubjectBody = parsMailSubjextAndBody(mailto: navigationURLString)
+            sendEmail(subject: mailSubjectBody.subject, body: mailSubjectBody.body)
+            decisionHandler(.allow)
+        } else if navigationURLString.hasPrefix(VUUKLE_SOCIAL_LOGIN) ||
+            navigationURLString.hasPrefix(VUUKLE_NEWS_BASE_URL) {
+            openNewWindow(newURL: navigationURLString)
+            decisionHandler(.cancel)
+        } else if (navigationURLString == VUUKLE_BASE) ||
+                    navigationURLString.hasPrefix(VUUKLE_STATS_URL) || navigationURLString.hasPrefix(VUUKLE_PRIVACY)  {
+            openWebSocialSharePage(withURL: navigationURLString)
+            decisionHandler(.cancel)
+        } else {
+            openApllicationForShare(navigationURLString: navigationURLString, decisionHandler: decisionHandler)
+        }
+    }
+    
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        print("8")
+        
+    }
+    
+    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
+        print("9")
+        
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        print("10")
+    }
+    
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        print("11")
+        
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("error == \(error.localizedDescription)")
+        print("12")
+        
+    }
+    
+    func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("13")
+
+        completionHandler(.performDefaultHandling, nil)
+    }
+    
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        print("14")
+    }
+    
+    func webView(_ webView: WKWebView, authenticationChallenge challenge: URLAuthenticationChallenge, shouldAllowDeprecatedTLS decisionHandler: @escaping (Bool) -> Void) {
+        print("15")
+        decisionHandler(true)
+    }
+}
+
+extension ViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        conteinerWKWebViewWithScriptHeightConstraint.constant = wkWebViewWithScript.scrollView.contentOffset.y
+        wkWebViewWithScript.setNeedsLayout()
     }
 }

@@ -14,6 +14,10 @@ let VUUKLE_EMOTES = "https://cdn.vuukle.com/widgets/emotes.html?apiKey=c7368a34-
 
 let VUUKLE_POWERBAR = "https://cdntest.vuukle.com/widgets/powerbar.html?amp=false&apiKey=664e0b85-5b2c-4881-ba64-3aa9f992d01c&host=relaxed-beaver-76304e.netlify.com&articleId=Index&img=https%3A%2F%2Fwww.gettyimages.ie%2Fgi-resources%2Fimages%2FHomepage%2FHero%2FUK%2FCMS_Creative_164657191_Kingfisher.jpg&title=Index&url=https%3A%2F%2Frelaxed-beaver-76304e.netlify.app%2F&tags=123&author=123&lang=en&gr=false&darkMode=false&defaultEmote=1&items=&standalone=0&mode=horizontal"
 
+// Vuukle Google config
+let VUUKLE_GOOGLE_CONFIG = "Version/8.0.2 Safari/600.2.5"
+
+
 // Social Login URLs
 let VUUKLE_SOCIAL_LOGIN = "https://login.vuukle.com/auth"
 let VUUKLE_SOCIAL_LOGIN_SUCCESS = "https://login.vuukle.com/consent"
@@ -43,6 +47,7 @@ let VUUKLE_MESSENGER_SHARE = "fb-messenger://share"
 let VUUKLE_TG_SHARE = "tg://msg_url"
 // Vuukle News
 let VUUKLE_NEWS_BASE_URL = "https://news.vuukle.com/"
+let VUUKLE_STATS_URL = "https://api.vuukle.com/stats"
 // Vuukle Privacy
 let VUUKLE_PRIVACY = "https://docs.vuukle.com/privacy-and-policy/"
 // Vuukle notification base URL

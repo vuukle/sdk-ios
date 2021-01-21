@@ -224,6 +224,82 @@
             </objects>
             <point key="canvasLocation" x="3010.144927536232" y="783.48214285714278"/>
         </scene>
+        <!--Wuukle Web Social Page View Controller-->
+        <scene sceneID="K1a-VA-dK2">
+            <objects>
+                <viewController storyboardIdentifier="WuukleWebSocialPageViewController" id="3Ld-DG-bin" customClass="WuukleWebSocialPageViewController" customModule="VukkleExample" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="rJ1-a0-793">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m0o-Dn-EHS">
+                                <rect key="frame" x="0.0" y="88" width="375" height="690"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lov-vM-0p8">
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="690"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FyF-iO-ffa">
+                                                <rect key="frame" x="0.0" y="0.0" width="375" height="690"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <constraints>
+                                            <constraint firstItem="FyF-iO-ffa" firstAttribute="leading" secondItem="Lov-vM-0p8" secondAttribute="leading" id="PTm-LT-R4R"/>
+                                            <constraint firstAttribute="trailing" secondItem="FyF-iO-ffa" secondAttribute="trailing" id="RgH-3l-6v8"/>
+                                            <constraint firstAttribute="height" constant="690" id="TCH-uV-QTO"/>
+                                            <constraint firstAttribute="bottom" secondItem="FyF-iO-ffa" secondAttribute="bottom" id="aAl-bb-OcA"/>
+                                            <constraint firstItem="FyF-iO-ffa" firstAttribute="top" secondItem="Lov-vM-0p8" secondAttribute="top" id="lLG-IP-MV5"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="Lov-vM-0p8" secondAttribute="bottom" id="8tD-HJ-dvn"/>
+                                    <constraint firstItem="Lov-vM-0p8" firstAttribute="leading" secondItem="m0o-Dn-EHS" secondAttribute="leading" id="9KR-UI-tGC"/>
+                                    <constraint firstItem="Lov-vM-0p8" firstAttribute="width" secondItem="m0o-Dn-EHS" secondAttribute="width" id="BC7-zC-3fB"/>
+                                    <constraint firstAttribute="trailing" secondItem="Lov-vM-0p8" secondAttribute="trailing" id="ai8-Ne-0c9"/>
+                                    <constraint firstItem="Lov-vM-0p8" firstAttribute="top" secondItem="m0o-Dn-EHS" secondAttribute="top" id="wjm-KK-L8l"/>
+                                </constraints>
+                            </scrollView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="8AL-z5-zjC"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="m0o-Dn-EHS" firstAttribute="leading" secondItem="8AL-z5-zjC" secondAttribute="leading" id="1ad-9g-7WQ"/>
+                            <constraint firstItem="8AL-z5-zjC" firstAttribute="trailing" secondItem="m0o-Dn-EHS" secondAttribute="trailing" id="31B-kB-Lc0"/>
+                            <constraint firstItem="m0o-Dn-EHS" firstAttribute="top" secondItem="8AL-z5-zjC" secondAttribute="top" id="IXn-48-0iX"/>
+                            <constraint firstItem="8AL-z5-zjC" firstAttribute="bottom" secondItem="m0o-Dn-EHS" secondAttribute="bottom" id="sGC-Qo-T4j"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="ijB-Mi-4u1"/>
+                    <connections>
+                        <outlet property="contentViewForWKWebView" destination="FyF-iO-ffa" id="6zg-tJ-aL8"/>
+                        <outlet property="scrollContentView" destination="Lov-vM-0p8" id="x3d-fy-3LL"/>
+                        <outlet property="scrollContentViewHeightConstraint" destination="TCH-uV-QTO" id="eGT-AH-iat"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="jCT-On-gGG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4772" y="1572.4137931034484"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="fKT-BY-4sd">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="KBA-gf-4rC" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="3aG-cE-wdr">
+                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="3Ld-DG-bin" kind="relationship" relationship="rootViewController" id="CEJ-4J-b19"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="IiV-2O-SNC" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3829.5999999999999" y="1572.4137931034484"/>
+        </scene>
     </scenes>
     <resources>
         <systemColor name="systemBackgroundColor">
