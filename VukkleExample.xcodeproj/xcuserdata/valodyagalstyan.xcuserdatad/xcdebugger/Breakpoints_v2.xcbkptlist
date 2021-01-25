@@ -16,7 +16,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "212"
             endingLineNumber = "212"
-            landmarkName = "openNewWindow(newURL:)"
+            landmarkName = "addWKWebViewForTopPowerBar()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -32,7 +32,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "286"
             endingLineNumber = "286"
-            landmarkName = "webView(_:decidePolicyFor:decisionHandler:)"
+            landmarkName = "openNewWindow(newURL:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -48,7 +48,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "294"
             endingLineNumber = "294"
-            landmarkName = "webView(_:runJavaScriptAlertPanelWithMessage:initiatedByFrame:completionHandler:)"
+            landmarkName = "openNewWindow(newURL:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -64,23 +64,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "298"
             endingLineNumber = "298"
-            landmarkName = "webView(_:runJavaScriptConfirmPanelWithMessage:initiatedByFrame:completionHandler:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "A723A13D-F5C1-4B75-B470-09F469DDB0FC"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "VukkleExample/ViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "315"
-            endingLineNumber = "315"
-            landmarkName = "webView(_:decidePolicyFor:decisionHandler:)"
+            landmarkName = "openNewWindow(newURL:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -96,7 +80,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "228"
             endingLineNumber = "228"
-            landmarkName = "openNewWindow(newURL:)"
+            landmarkName = "addWKWebViewForBottomPowerBar()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -112,7 +96,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "234"
             endingLineNumber = "234"
-            landmarkName = "webView(_:didFinish:)"
+            landmarkName = "addWKWebViewForBottomPowerBar()"
             landmarkType = "7">
             <Locations>
                <Location
@@ -160,7 +144,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "263"
             endingLineNumber = "263"
-            landmarkName = "webView(_:previewingViewControllerForElement:defaultActions:)"
+            landmarkName = "observeValue(forKeyPath:of:change:context:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -176,8 +160,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "281"
             endingLineNumber = "281"
-            landmarkName = "webView(_:decidePolicyFor:preferences:decisionHandler:)"
-            landmarkType = "7">
+            landmarkName = "ViewController"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -192,7 +176,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "270"
             endingLineNumber = "270"
-            landmarkName = "webView(_:decidePolicyFor:preferences:decisionHandler:)"
+            landmarkName = "clearAllCookies()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -208,7 +192,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "211"
             endingLineNumber = "211"
-            landmarkName = "openNewWindow(newURL:)"
+            landmarkName = "addWKWebViewForTopPowerBar()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -224,8 +208,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "121"
             endingLineNumber = "121"
-            landmarkName = "addWKWebViewForScript()"
-            landmarkType = "7">
+            landmarkName = "ViewController"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -240,7 +224,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "139"
             endingLineNumber = "139"
-            landmarkName = "addWKWebViewForEmoji()"
+            landmarkName = "askCameraAccess()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -256,7 +240,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "122"
             endingLineNumber = "122"
-            landmarkName = "addWKWebViewForScript()"
+            landmarkName = "keyboardHided()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -272,7 +256,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "328"
             endingLineNumber = "328"
-            landmarkName = "openNewsWindow(withURL:)"
+            landmarkName = "webView(_:didFinish:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
