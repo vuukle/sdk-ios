@@ -16,7 +16,7 @@ let VUUKLE_POWERBAR = "https://cdntest.vuukle.com/widgets/powerbar.html?amp=fals
 
 // Vuukle Google config
 let VUUKLE_GOOGLE_CONFIG = "Version/8.0.2 Safari/600.2.5"
-
+ 
 
 // Social Login URLs
 let VUUKLE_SOCIAL_LOGIN = "https://login.vuukle.com/auth"
@@ -45,6 +45,7 @@ let VUUKLE_MAIL_SHARE = "mailto:?subject"
 let VUUKLE_MAIL_TO_SHARE = "mailto:to?subject"
 let VUUKLE_MESSENGER_SHARE = "fb-messenger://share"
 let VUUKLE_TG_SHARE = "tg://msg_url"
+let VUUKLE_TG_APPSTORE_URL = "https://itunes.apple.com/app/telegram-messenger/id686449807"
 // Vuukle News
 let VUUKLE_NEWS_BASE_URL = "https://news.vuukle.com/"
 let VUUKLE_STATS_URL = "https://api.vuukle.com/stats"
@@ -60,3 +61,41 @@ let VUUKLE_URLS = [VUUKLE_NEWS_BASE_URL, VUUKLE_PRIVACY, VUUKLE_NOTIFICATION_BAS
 
 // Vuukle Coment View Initial Sizes
 let VUUKLE_COMENT_INITIAL_HEIGHT = 268
+
+//Vuukle social application names
+let VUUKLE_WHATSAPP_NAME = "WhatsApp"
+let VUUKLE_REDDIT_NAME = "Reddit"
+let VUUKLE_TELEGRAM_NAME = "Telegram"
+let VUUKLE_FACEBOOK_NAME = "Facebook"
+let VUUKLE_MESSENGER_NAME = "Messenger"
+let VUUKLE_LINKEDIN_NAME = "LinkedIn"
+let VUUKLE_TWITTER_NAME = "Twitter"
+let VUUKLE_PINTEREST_NAME = "Pinterest"
+let VUUKLE_FLIPBOARD_NAME = "Flipboard"
+let VUUKLE_TUMBLR_NAME = "Tumblr"
+
+//Vuukle social application urls stored in device constants
+
+let VUUKLE_WHATSAPP_DEVICE_URL = "whatsapp://"
+let VUUKLE_REDDIT_DEVICE_URL = "reddit://"
+let VUUKLE_TELEGRAM_DEVICE_URL = "telegram://"
+let VUUKLE_FACEBOOK_DEVICE_URL = "fb://"
+let VUUKLE_MESSENGER_DEVICE_URL = "fb-messenger://"
+let VUUKLE_LINKEDIN_DEVICE_URL = "LinkedIn://"
+let VUUKLE_TWITTER_DEVICE_URL = "twitter://"
+let VUUKLE_PINTEREST_DEVICE_URL = "Pinterest://"
+let VUUKLE_FLIPBOARD_DEVICE_URL = "Flipboard://"
+let VUUKLE_TUMBLR_DEVICE_URL = "Tumblr://"
+
+// Vuukle social applications ids in AppStore
+
+let VUUKLE_WHATSAPP_APPSTORE_ID = "id310633997"
+let VUUKLE_REDDIT_APPSTORE_ID = "id1064216828"
+let VUUKLE_TELEGRAM_APPSTORE_ID = "id686449807"
+let VUUKLE_FACEBOOK_APPSTORE_ID = "id284882215"
+let VUUKLE_MESSENGER_APPSTORE_ID = "id454638411"
+let VUUKLE_LINKEDIN_APPSTORE_ID = "id288429040"
+let VUUKLE_TWITTER_APPSTORE_ID = "id333903271"
+let VUUKLE_PINTEREST_APPSTORE_ID = "id429047995"
+let VUUKLE_FLIPBOARD_APPSTORE_ID = "id358801284"
+let VUUKLE_TUMBL_APPSTORE_ID = "id305343404"

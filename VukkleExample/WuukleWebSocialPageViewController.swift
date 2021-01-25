@@ -50,10 +50,6 @@ class WuukleWebSocialPageViewController: UIViewController {
         wkWebView.scrollView.removeObserver(self, forKeyPath: "contentSize", context: nil)
     }
     
-    deinit {
-        print("deinit in WuukleWebSocialPageViewController")
-    }
-
     //Register for keyboard notification
     func registerNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardShow), name: .UIKeyboardWillShow, object: nil)
@@ -113,8 +109,8 @@ class WuukleWebSocialPageViewController: UIViewController {
         let script: WKUserScript = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         let userContentController: WKUserContentController = WKUserContentController()
 
-        configuration.userContentController = userContentController
         userContentController.addUserScript(script)
+        configuration.userContentController = userContentController
         
         configuration.processPool = WKProcessPool()
         let cookies = HTTPCookieStorage.shared.cookies ?? [HTTPCookie]()
@@ -123,7 +119,7 @@ class WuukleWebSocialPageViewController: UIViewController {
         } else {
             
         } })
-        
+
         if urlString == VUUKLE_SOCIAL_LOGIN_GOOGLE {
             configuration.applicationNameForUserAgent = VUUKLE_GOOGLE_CONFIG
         }
@@ -190,13 +186,11 @@ extension WuukleWebSocialPageViewController: WKNavigationDelegate, WKUIDelegate 
     
     // MARK: WKNavigationDelegate methods
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("didFinish navigation in WuukleWebSocialPageViewController")
         scrollContentViewHeightConstraint.constant = self.view.frame.height
         stopActivityIndicator()
     }
     
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        print("1 in WuukleWebSocialPageViewController")
     
         scrollContentViewHeightConstraint.constant = self.view.frame.height
         webView.load(navigationAction.request)
@@ -207,7 +201,6 @@ extension WuukleWebSocialPageViewController: WKNavigationDelegate, WKUIDelegate 
     }
     
     func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
-        print("2 in WuukleWebSocialPageViewController")
         
         let alertController = UIAlertController(title: prompt, message: defaultText, preferredStyle: .alert)
         present(alertController, animated: true)
@@ -220,67 +213,24 @@ extension WuukleWebSocialPageViewController: WKNavigationDelegate, WKUIDelegate 
     }
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        print("3 in WuukleWebSocialPageViewController")
-        
-        let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
-        print("navigationURLString in WuukleWebSocialPageViewController \(navigationURLString)")
-        
         decisionHandler(.allow)
         return
     }
     
     func webView(_ webView: WKWebView, shouldPreviewElement elementInfo: WKPreviewElementInfo) -> Bool {
-        print("4 in WuukleWebSocialPageViewController")
-        
         return true
     }
     
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        print("5 in WuukleWebSocialPageViewController")
         completionHandler(true)
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        print("7 in WuukleWebSocialPageViewController")
         decisionHandler(.allow)
     }
-    
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        print("8 in WuukleWebSocialPageViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-        print("9 in WuukleWebSocialPageViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        print("10 in WuukleWebSocialPageViewController")
-    }
-    
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        print("11 in WuukleWebSocialPageViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("error == \(error.localizedDescription)")
-        print("12 in WuukleWebSocialPageViewController")
-        
-    }
-    
+            
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("13 in WuukleWebSocialPageViewController")
         completionHandler(.performDefaultHandling, nil)
-    }
-    
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        print("14 in WuukleWebSocialPageViewController")
-    }
-    
-    func webView(_ webView: WKWebView, authenticationChallenge challenge: URLAuthenticationChallenge, shouldAllowDeprecatedTLS decisionHandler: @escaping (Bool) -> Void) {
-        print("15 in WuukleWebSocialPageViewController")
     }
 }
 

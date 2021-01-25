@@ -151,8 +151,12 @@ class VuukleNewViewController: UIViewController {
             self.openWebSocialSharePage(withURL: navigationURLString)
         }
         
+        if appName == VUUKLE_WHATSAPP_NAME || appName == VUUKLE_MESSENGER_NAME || appName == VUUKLE_TELEGRAM_NAME {
+           
+        } else {
+            ac.addAction(openInWeb)
+        }
         ac.addAction(cancelAction)
-        ac.addAction(openInWeb)
         ac.addAction(okAction)
         present(ac, animated: true, completion: nil)
     }
@@ -174,23 +178,23 @@ class VuukleNewViewController: UIViewController {
     func openApllicationForShare(navigationURLString: String, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
         
         if  (navigationURLString.contains(VUUKLE_WHATSAPP_PROFILE_SHARE)) {
-            openApplication(appName: "whatsapp://", navigationURLString: navigationURLString, name: "WhatsApp", id: "id310633997")
+            openApplication(appName: VUUKLE_WHATSAPP_DEVICE_URL, navigationURLString: navigationURLString, name: VUUKLE_WHATSAPP_NAME, id: VUUKLE_WHATSAPP_APPSTORE_ID)
             decisionHandler(.cancel)
 
-        } else if (navigationURLString.contains(VUUKLE_TG_SHARE)) {
-            openApplication(appName: "telegram://", navigationURLString: navigationURLString, name: "Telegram", id: "id686449807")
+        } else if (navigationURLString.contains(VUUKLE_TG_SHARE)) || navigationURLString.contains(VUUKLE_TG_APPSTORE_URL) {
+            openApplication(appName: VUUKLE_TELEGRAM_DEVICE_URL, navigationURLString: navigationURLString, name: VUUKLE_TELEGRAM_NAME, id: VUUKLE_TELEGRAM_APPSTORE_ID)
             decisionHandler(.cancel)
 
         } else if (navigationURLString.contains(VUUKLE_FB_SHARE)) {
-            openApplication(appName: "fb://", navigationURLString: navigationURLString, name: "Facebook", id: "id284882215")
+            openApplication(appName: VUUKLE_FACEBOOK_DEVICE_URL, navigationURLString: navigationURLString, name: VUUKLE_FACEBOOK_NAME, id: VUUKLE_FACEBOOK_APPSTORE_ID)
             decisionHandler(.cancel)
  
         }  else if (navigationURLString.contains(VUUKLE_LINKEDIN_SHARE)) {
-            openApplication(appName: "LinkedIn://", navigationURLString: navigationURLString, name: "LinkedIn", id: "id288429040")
+            openApplication(appName: VUUKLE_LINKEDIN_DEVICE_URL, navigationURLString: navigationURLString, name: VUUKLE_LINKEDIN_NAME, id: VUUKLE_LINKEDIN_APPSTORE_ID)
             decisionHandler(.cancel)
 
         } else if (navigationURLString.contains(VUUKLE_TWITTER_SHARE)) {
-            openApplication(appName: "twitter://", navigationURLString: navigationURLString, name: "Twitter", id: "id333903271")
+            openApplication(appName: VUUKLE_TWITTER_DEVICE_URL, navigationURLString: navigationURLString, name: VUUKLE_TWITTER_NAME, id: VUUKLE_TELEGRAM_APPSTORE_ID)
             decisionHandler(.cancel)
         } else {
             decisionHandler(.allow)
@@ -203,7 +207,6 @@ class VuukleNewViewController: UIViewController {
         if withURL == VUUKLE_SOCIAL_LOGIN_GOOGLE {
             configuration.applicationNameForUserAgent = VUUKLE_GOOGLE_CONFIG
         }
-        ///////////////////////////////////////
         if let newsWindow = storyboard?.instantiateViewController(withIdentifier: WuukleWebSocialPageViewController.id) as?  WuukleWebSocialPageViewController {
 
             newsWindow.urlString = withURL
@@ -223,14 +226,12 @@ class VuukleNewViewController: UIViewController {
             }
         }
     }
-    
 }
 
 extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     
     // MARK: WKNavigationDelegate methods
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("didFinish navigation in VuukleNewViewController")
         scrollContentViewHeightConstraint.constant = self.view.frame.height
         
         stopActivityIndicator()
@@ -244,7 +245,6 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     }
     
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        print("1 in VuukleNewViewController")
     
         scrollContentViewHeightConstraint.constant = self.view.frame.height
         webView.load(navigationAction.request)
@@ -255,7 +255,6 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     }
     
     func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
-        print("2 in VuukleNewViewController")
         
         let alertController = UIAlertController(title: prompt, message: defaultText, preferredStyle: .alert)
         present(alertController, animated: true)
@@ -268,11 +267,10 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
     }
     
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Swift.Void) {
-        print("3 in VuukleNewViewController")
         let navigationURLString = navigationAction.request.url?.absoluteString ?? ""
-        print("navigationURLString in VuukleNewViewController \(navigationURLString)")
         
         if (navigationURLString.contains(VUUKLE_SOCIAL_LOGIN_SUCCESS)) {
+            self.navigationController?.popViewController(animated: true)
             decisionHandler(.allow)
         } else {
             openApllicationForShare(navigationURLString: navigationURLString, decisionHandler: decisionHandler)
@@ -280,98 +278,18 @@ extension VuukleNewViewController:  WKNavigationDelegate, WKUIDelegate  {
         return
     }
     
-    func webView(_ webView: WKWebView, shouldPreviewElement elementInfo: WKPreviewElementInfo) -> Bool {
-        print("4 in VuukleNewViewController")
-        
-        return true
-    }
-    
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        print("5 in VuukleNewViewController")
         
         completionHandler(true)
     }
     
-    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        print("7 in VuukleNewViewController")
-        decisionHandler(.allow)
-    }
-    
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        print("8 in VuukleNewViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didReceiveServerRedirectForProvisionalNavigation navigation: WKNavigation!) {
-        print("9 in VuukleNewViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        print("10 in VuukleNewViewController")
-    }
-    
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        print("11 in VuukleNewViewController")
-        
-    }
-    
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("error == \(error.localizedDescription)")
-        print("12 in VuukleNewViewController")
-        
-    }
-    
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        print("13 in VuukleNewViewController")
         completionHandler(.performDefaultHandling, nil)
-    }
-    
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        print("14 in VuukleNewViewController")
-    }
-    
-    func webView(_ webView: WKWebView, authenticationChallenge challenge: URLAuthenticationChallenge, shouldAllowDeprecatedTLS decisionHandler: @escaping (Bool) -> Void) {
-        print("15 in VuukleNewViewController")
     }
     
     @available(iOS 9.0, *)
     func webViewDidClose(_ webView: WKWebView) {
-        print("webViewDidClose")
         self.navigationController?.popViewController(animated: true)
-    }
-
-    @available(iOS 8.0, *)
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        print("runJavaScriptAlertPanelWithMessage")
-        completionHandler()
-    }
-    
-    @available(iOS, introduced: 10.0, deprecated: 13.0)
-    func webView(_ webView: WKWebView, previewingViewControllerForElement elementInfo: WKPreviewElementInfo, defaultActions previewActions: [WKPreviewActionItem]) -> UIViewController? {
-        print("previewingViewControllerForElement")
-        return UIViewController()
-    }
-
-    @available(iOS, introduced: 10.0, deprecated: 13.0)
-    func webView(_ webView: WKWebView, commitPreviewingViewController previewingViewController: UIViewController) {
-        print("commitPreviewingViewController")
-    }
-
-    
-    @available(iOS 13.0, *)
-    func webView(_ webView: WKWebView, contextMenuWillPresentForElement elementInfo: WKContextMenuElementInfo) {
-        print("contextMenuWillPresentForElement")
-    }
- 
-    @available(iOS 13.0, *)
-    func webView(_ webView: WKWebView, contextMenuForElement elementInfo: WKContextMenuElementInfo, willCommitWithAnimator animator: UIContextMenuInteractionCommitAnimating) {
-        print("contextMenuForElement elementInfo")
-    }
-
-    @available(iOS 13.0, *)
-    func webView(_ webView: WKWebView, contextMenuDidEndForElement elementInfo: WKContextMenuElementInfo) {
-        print("contextMenuDidEndForElement elementInfo")
     }
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
